@@ -1,0 +1,171 @@
+import { useEffect, useState } from "react";
+import { Link, useParams, useNavigate } from "react-router";
+import { products } from "@/data/products";
+import { useCart } from "@/context/CartContext";
+import { formatPrice } from "@/utils/formatPrice";
+
+export default function ProductDetailList() {
+  const { slug } = useParams();
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
+
+  const product = products.find((item) => item.slug === slug);
+  const totalStock = product.size.reduce((total, item) => {
+    return total + item.stock;
+  }, 0);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    if (product) {
+      setCurrentIndex(0);
+      setSelectedSize(null);
+    }
+  }, [product]);
+
+  if (!product) {
+    return <h1>Product Not Found</h1>;
+  }
+
+  const images = product.images;
+
+  const handleAddToCart = () => {
+    if (!selectedSize) {
+      alert("Pilih size dulu ya!");
+      return;
+    }
+
+    addToCart(product, selectedSize);
+
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
+
+  const handleBuyNow = () => {
+    alert("Buy Now!");
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto mt-16 px-5 lg:px-0">
+      {/* Breadcrumb */}
+      <div className="flex gap-2">
+        <Link to="/" className="text-lg tracking-tightest">
+          Home
+        </Link>
+        <span>/</span>
+        <Link to="#" className="text-lg tracking-tightest">
+          Product
+        </Link>
+        <span>/</span>
+        <Link to="#" className="text-lg font-medium tracking-tightest">
+          Product Detail
+        </Link>
+      </div>
+
+      <div className="flex flex-col lg:flex-row mt-16 gap-10 items-start">
+        {/* Image Gallery */}
+        <div className="w-full lg:w-1/2">
+          {/* parent harus relative */}
+          <div className="relative overflow-hidden rounded-2xl w-full">
+            {/* Gambar utama */}
+            <img
+              src={images[currentIndex]}
+              alt={product.name}
+              className="w-full h-165 object-cover"
+            />
+
+            {/* Thumbnail di dalam gambar */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3 backdrop-blur px-3 py-2 rounded-xl w-full">
+              {images.map((img, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`border-2 rounded-lg overflow-hidden transition ${
+                    currentIndex === index
+                      ? "border-maroon"
+                      : "border-transparent"
+                  }`}
+                >
+                  <img
+                    src={img}
+                    alt={`preview ${index + 1}`}
+                    className="w-37.5 h-37.5 object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full lg:w-1/2">
+          <h1 className="text-3xl lg:text-4xl font-medium tracking-tightest leading-10 lg:leading-12">
+            {product.name}
+          </h1>
+          <p className="mt-6 text-xl font-semibold tracking-tightest leading-6">
+            {formatPrice(product.price)}
+          </p>
+          <p className="text-sm mt-2 font-medium text-abu">
+            Stock: {totalStock}
+          </p>
+
+          <div className="flex flex-col gap-3 mt-8">
+            <h1 className="text-base tracking-tightest leading-6">
+              Select Size:{" "}
+              {selectedSize && (
+                <span className="font-semibold text-maroon">
+                  {selectedSize}
+                </span>
+              )}
+            </h1>
+            <div className="flex flex-wrap gap-4 mt-4">
+              {product.size.map((s) => (
+                <button
+                  key={s.size}
+                  onClick={() => setSelectedSize(s.size)}
+                  disabled={s.stock === 0}
+                  className={`border px-8 py-3 w-25 rounded-full cursor-pointer transition-colors ${
+                    selectedSize === s.size
+                      ? "bg-maroon text-white border-maroon"
+                      : "bg-abuabu text-abu border-transparent"
+                  } ${s.stock === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  <span className="text-xl font-semibold tracking-tightest leading-5">
+                    {s.size}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-1.5 mt-8">
+            <button
+              onClick={handleAddToCart}
+              className={`px-28 text-white text-center text-lg font-medium py-3.5 tracking-tightest rounded-full leading-6 transition-colors ${
+                added ? "bg-green-600" : "bg-maroon hover:bg-maroon/90"
+              }`}
+            >
+              {added ? "Added!" : "Add to Cart"}
+            </button>
+            <button
+              onClick={handleBuyNow}
+              className="bg-white border-2 border-maroon px-10 text-maroon tracking-tightest text-center text-lg font-medium py-3.5 rounded-full leading-6 hover:bg-maroon hover:text-white transition-colors"
+            >
+              Buy Now
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-6 mt-12">
+            <h1 className="text-lg tracking-tightest font-medium leading-6">
+              {product.title}
+            </h1>
+            <p className="text-base text-abu tracking-tightest leading-6">
+              {product.description}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
