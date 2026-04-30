@@ -4,12 +4,16 @@ import "dotenv/config";
 
 import adminRoutes from './routes/adminRoutes.js'
 import authRoutes from './routes/authRoutes.js'
+import productRoutes from './routes/productRoutes.js'
+import cartRoutes from './routes/cartRoutes.js'
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 
 app.use('/api/auth', authRoutes)
+app.use('/api/products', productRoutes)
+app.use("/api/cart", cartRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => res.json({ message: "Pancarona API is running" }));

@@ -83,7 +83,6 @@ export const deleteProduct = async (req, res) => {
     const product = await prisma.product.findUnique({ where: { id } });
     if (!product) return res.status(404).json({ message: "Produk tidak ditemukan" });
 
-    // Hapus semua foto dari Cloudinary
     for (const url of product.images) {
       const publicId = url.split("/").slice(-3).join("/").split(".")[0];
       await cloudinary.uploader.destroy(publicId);
