@@ -17,19 +17,20 @@ export default function LoginForm() {
     setForm({...form, [e.target.name]: e.target.value});
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      const success = login(form.email, form.password);
-      setLoading(false);
-      if(success) navigate("/");
-    }, 600);
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  try {
+    const success = await login(form.email, form.password);
+    if (success) navigate("/");
+  } finally {
+    setLoading(false);
   }
+};
 
   return (
     <AuthLayouts
-      title="Welcome Back 👋"
+      title="Welcome Back"
       description="Sign in to continue shopping and track your orders."
       check="Keep me signed in"
       showForgotPassword={true}

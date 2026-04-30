@@ -35,13 +35,31 @@ export const login = async (req, res) => {
       { expiresIn: "7d" },
     );
 
-    res.json({
-      token,
-      user: { id: user.id, name: user.name, email: user.email },
-    });
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: false, 
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000, 
+      })
+      .json({
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+};
+
+export const logout = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+  });
+  res.json({ message: "Logout berhasil" });
 };
 
 export const getProfile = async (req, res) => {

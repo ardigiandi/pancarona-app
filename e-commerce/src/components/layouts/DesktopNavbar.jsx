@@ -1,5 +1,4 @@
 import { Link } from "react-router";
-import CartIcon from "../atom/CartIcon";
 import { useAuth } from "@/context/AuthContext";
 import ProfileMenu from "../fragments/ProfileMenu";
 

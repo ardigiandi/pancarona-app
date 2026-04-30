@@ -16,14 +16,15 @@ export default function RegisterForm() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      const success = register(form.name, form.email, form.password);
-      setLoading(false);
+    try {
+      const success = await register(form.name, form.email, form.password);
       if (success) navigate("/auth/signin");
-    }, 600);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
