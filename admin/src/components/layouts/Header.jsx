@@ -1,3 +1,4 @@
+import { useAuth } from "../../context/AuthContext";
 import { Menu, Bell, Search, Sun } from "lucide-react";
 
 const pageTitles = {
@@ -9,6 +10,9 @@ const pageTitles = {
 };
 
 export default function Header({ sidebarOpen, setSidebarOpen, activePage }) {
+
+
+    const {logout} = useAuth();
     
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-[#141418]">
@@ -38,6 +42,8 @@ export default function Header({ sidebarOpen, setSidebarOpen, activePage }) {
             className="bg-transparent text-sm text-white/60 placeholder:text-white/20 outline-none w-full"
           />
         </div>
+
+        <button onClick={logout}>Logout</button>
 
         <button className="relative w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-white/40 hover:text-white transition-colors">
           <Bell size={16} />

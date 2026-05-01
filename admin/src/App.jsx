@@ -1,42 +1,37 @@
-import { useState } from "react";
-import Sidebar from "./components/layouts/Sidebar";
-import Header from "./components/layouts/Header";
+import { Routes, Route, Navigate } from "react-router";
+import { useAuth } from "./context/AuthContext";
+
+import DashboardLayout from "./components/layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Analytics from "./pages/Analytics";
 import Orders from "./pages/Orders";
 import Settings from "./pages/Settings";
+import Login from "./components/layouts/login";
 
 function App() {
-  const [activePage, setActivePage] = useState("dashboard");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { isAuth, loading } = useAuth();
 
-  const pages = {
-    dashboard: <Dashboard />,
-    users : <Users />,
-    analytics: <Analytics />,
-    orders : <Orders/>,
-    settings: <Settings />
-  };
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="flex h-screen bg-[#0f0f13] text-white overflow-hidden font-sans">
-      <Sidebar
-        activePage={activePage}
-        setActivePage={setActivePage}
-        sidebarOpen={sidebarOpen}
+    <Routes>
+      <Route
+        path="/login"
+        element={!isAuth ? <Login /> : <Navigate to="/dashboard" />}
       />
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <Header
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          activePage={activePage}
-        />
-        <main className="flex-1 overflow-y-auto p-6 bg-[#0f0f13]">
-          {pages[activePage]}
-        </main>
-      </div>
-    </div>
+
+      <Route
+        path="/"
+        element={isAuth ? <DashboardLayout /> : <Navigate to="/login" />}
+      >
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="users" element={<Users />} />
+        <Route path="analytics" element={<Analytics />} />
+        <Route path="orders" element={<Orders />} />
+        <Route path="settings" element={<Settings />} />
+      </Route>
+    </Routes>
   );
 }
 

@@ -39,6 +39,15 @@ const stats = [
   },
 ];
 
+const handleLogout = async () => {
+  await fetch("http://localhost:5000/api/admin/logout", {
+    method: "POST",
+    credentials: "include", // 🔥 WAJIB
+  });
+
+  window.location.href = "/login";
+};
+
 export default function Dashboard() {
   return (
     <div className="space-y-6">
@@ -59,7 +68,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Orders */}
       <RecentOrders />
     </div>
   );
