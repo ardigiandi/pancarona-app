@@ -10,6 +10,7 @@ export default function Sidebar({ sidebarOpen }) {
     { name: "Analytics", path: "/analytics" },
     { name: "Orders", path: "/orders" },
     { name: "Settings", path: "/settings" },
+    { name: "Product", path: "/product" },
   ];
 
   return (

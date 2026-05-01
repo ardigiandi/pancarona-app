@@ -2,7 +2,6 @@ import prisma from "../../lib/prisma.js";
 import { slugify } from "../../lib/slugify.js";
 import cloudinary from "../../lib/cloudinary.js";
 
-
 export const getProduct = async (res, req) => {
   try {
     const products = await prisma.product.findMany({
@@ -17,28 +16,54 @@ export const getProduct = async (res, req) => {
 };
 
 export const createProduct = async (req, res) => {
-  const { name, price, description, sizes } = req.body;
   try {
-    if (!req.files || req.files.length === 0)
+    const { name, price, description } = req.body;
+
+    if (!name || !price) {
+      return res.status(400).json({ message: "Data tidak lengkap" });
+    }
+
+    if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: "Minimal upload 1 foto" });
+    }
 
     const images = req.files.map((file) => file.path);
 
-    let slug = slugify(name);
+    let slug = slugify(name, { lower: true });
     const exists = await prisma.product.findUnique({ where: { slug } });
     if (exists) slug = `${slug}-${Date.now()}`;
 
-    const parsedSizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes;
+    const rawSizes = req.body.sizes || {};
+    const parsedSizes = Array.isArray(rawSizes)
+      ? rawSizes
+      : Object.values(rawSizes);
+
+    const finalSizes = parsedSizes.map((item) => ({
+      size: item.size,
+      stock: parseInt(item.stock) || 0,
+    }));
+
+    console.log("BODY:", req.body);
+    console.log("FILES:", req.files);
+    console.log("SIZES:", finalSizes);
 
     const product = await prisma.product.create({
       data: {
-        name, slug, price: parseInt(price), description, images,
-        sizes: { create: parsedSizes },
+        name,
+        slug,
+        price: parseInt(price),
+        description,
+        images,
+        sizes: {
+          create: finalSizes,
+        },
       },
       include: { sizes: true },
     });
+
     res.status(201).json(product);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -55,7 +80,7 @@ export const updateProduct = async (req, res) => {
 
     let slug = slugify(name);
     const exists = await prisma.product.findFirst({
-      where: { slug, NOT: { id } }, 
+      where: { slug, NOT: { id } },
     });
     if (exists) slug = `${slug}-${Date.now()}`;
 
@@ -66,7 +91,12 @@ export const updateProduct = async (req, res) => {
     const product = await prisma.product.update({
       where: { id },
       data: {
-        name, slug, price: parseInt(price), title, description, images,
+        name,
+        slug,
+        price: parseInt(price),
+        title,
+        description,
+        images,
         sizes: { create: parsedSizes },
       },
       include: { sizes: true },
@@ -81,7 +111,8 @@ export const deleteProduct = async (req, res) => {
   const id = parseInt(req.params.id);
   try {
     const product = await prisma.product.findUnique({ where: { id } });
-    if (!product) return res.status(404).json({ message: "Produk tidak ditemukan" });
+    if (!product)
+      return res.status(404).json({ message: "Produk tidak ditemukan" });
 
     for (const url of product.images) {
       const publicId = url.split("/").slice(-3).join("/").split(".")[0];

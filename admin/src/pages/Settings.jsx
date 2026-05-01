@@ -13,7 +13,7 @@ export default function Settings() {
       <div className="bg-[#141418] border border-white/5 rounded-2xl p-5">
         <h2 className="font-semibold text-white mb-4">Profil</h2>
         <div className="flex items-center gap-4 mb-5">
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-lg font-bold">
+          <div className="w-14 h-14 rounded-full bg-linear-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-lg font-bold">
             AD
           </div>
           <div>
