@@ -1,122 +1,99 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import api from "@/lib/api";
+import { useAuth } from "./AuthContext";
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
-  const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem("cart");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [cart, setCart] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
-
-  const addToCart = (product, selectedSize) => {
-    const selected = product.size.find((s) => s.size === selectedSize);
-
-    if (!selected || selected.stock === 0) {
-      alert("Stock habis!");
-      return;
+    if (user) {
+      fetchCart();
+    } else {
+      setCart([]);
     }
+  }, [user]);
 
-    setCart((prev) => {
-      const existing = prev.find(
-        (item) => item.id === product.id && item.size === selectedSize,
-      );
-
-      if (existing) {
-        if (existing.qty >= selected.stock) {
-          alert("Stock tidak cukup!");
-          return prev;
-        }
-
-        return prev.map((item) =>
-          item.id === product.id && item.size === selectedSize
-            ? { ...item, qty: item.qty + 1 }
-            : item,
-        );
-      }
-
-      return [
-        ...prev,
-        {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image: product.images[0],
-          size: selectedSize,
-          qty: 1,
-          stock: selected.stock,
-          checked: false,
-        },
-      ];
-    });
+  const fetchCart = async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get("/cart");
+      setCart(data);
+    } catch (err) {
+      console.error("Gagal fetch cart:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const toggleItem = (id, size) =>
-    setCart((prev) =>
-      prev.map((item) =>
-        item.id === id && item.size === size
-          ? { ...item, checked: !item.checked }
-          : item,
-      ),
-    );
+  const addItem = async ({
+    productId,
+    name,
+    image,
+    price,
+    size,
+    qty,
+    stock,
+  }) => {
+    try {
+      const { data } = await api.post("/cart", {
+        productId,
+        name,
+        image,
+        price,
+        size,
+        qty,
+        stock,
+      });
+      setCart(data);
+    } catch (err) {
+      console.error("Gagal tambah item:", err);
+    }
+  };
 
-  const toggleSelectAll = (checked) =>
-    setCart((prev) => prev.map((item) => ({ ...item, checked })));
+  const changeQty = async (productId, size, delta) => {
+    try {
+      await api.put("/cart", { productId, size, delta });
+      setCart((prev) =>
+        prev.map((item) =>
+          item.productId === productId && item.size === size
+            ? { ...item, qty: item.qty + delta }
+            : item,
+        ),
+      );
+    } catch (err) {
+      console.error("Gagal update qty:", err.response?.data);
+    }
+  };
 
-  const changeQty = (id, size, delta) =>
-    setCart((prev) =>
-      prev.map((item) => {
-        if (item.id === id && item.size === size) {
-          const newQty = item.qty + delta;
+  const removeItem = async (productId, size) => {
+    try {
+      await api.delete(`/cart/${productId}/${size}`);
+      setCart((prev) =>
+        prev.filter(
+          (item) => !(item.productId === productId && item.size === size),
+        ),
+      );
+    } catch (err) {
+      console.error("Gagal hapus item:", err);
+    }
+  };
 
-          if (newQty < 1) return item;
-
-          if (newQty > item.stock) {
-            alert("Melebihi stock!");
-            return item;
-          }
-
-          return { ...item, qty: newQty };
-        }
-        return item;
-      }),
-    );
-
-  const removeItem = (id, size) =>
-    setCart((prev) =>
-      prev.filter((item) => !(item.id === id && item.size === size)),
-    );
-
-  const clearCart = () => setCart([]);
-
-  const deleteSelected = () =>
-    setCart((prev) => prev.filter((item) => !item.checked));
-
-  const selectedItems = cart.filter((i) => i.checked);
-  const totalItems = selectedItems.reduce((s, i) => s + i.qty, 0);
-  const totalPrice = selectedItems.reduce((s, i) => s + i.price * i.qty, 0);
-  const allChecked = cart.length > 0 && cart.every((i) => i.checked);
-  const someChecked = cart.some((i) => i.checked);
+  const clearCart = async () => {
+    try {
+      await api.delete("/cart");
+      setCart([]);
+    } catch (err) {
+      console.error("Gagal clear cart:", err);
+    }
+  };
 
   return (
     <CartContext.Provider
-      value={{
-        cart,
-        addToCart,
-        toggleItem,
-        toggleSelectAll,
-        changeQty,
-        removeItem,
-        deleteSelected,
-        totalItems,
-        clearCart,
-        totalPrice,
-        allChecked,
-        someChecked,
-      }}
+      value={{ cart, loading, addItem, changeQty, removeItem, clearCart }}
     >
       {children}
     </CartContext.Provider>

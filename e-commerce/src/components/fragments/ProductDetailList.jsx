@@ -1,50 +1,63 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router";
-import { products } from "@/data/products";
+import { Link, useParams } from "react-router";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/utils/formatPrice";
+import { getProductBySlug } from "@/services/productService";
 
 export default function ProductDetailList() {
   const { slug } = useParams();
-  const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addItem: addToCart } = useCart();
 
-  const product = products.find((item) => item.slug === slug);
-  const totalStock = product.size.reduce((total, item) => {
-    return total + item.stock;
-  }, 0);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
-    if (product) {
-      setCurrentIndex(0);
-      setSelectedSize(null);
-    }
+    if (!slug) return;
+
+    getProductBySlug(slug)
+      .then((data) => setProduct(data))
+      .catch((err) => console.log(err))
+      .finally(() => setLoading(false));
+  }, [slug]);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+    setSelectedSize(null);
   }, [product]);
 
-  if (!product) {
-    return <h1>Product Not Found</h1>;
-  }
+  if (!slug) return <p>Slug tidak ditemukan</p>;
+  if (loading) return <p>Loading...</p>;
+  if (!product) return <p>Product tidak ditemukan</p>;
 
-  const images = product.images;
+  const images = product.images || [];
+  const sizes = product.sizes || [];
+
+  const totalStock = sizes.reduce((total, item) => total + item.stock, 0);
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      alert("Pilih size dulu ya!");
+      alert("Pilih size dulu ya");
       return;
     }
 
-    addToCart(product, selectedSize);
+    const sizeData = sizes.find((s) => s.size === selectedSize);
+
+    addToCart({
+      productId: product.id,
+      name: product.name,
+      image: images[0],
+      price: product.price,
+      size: selectedSize,
+      qty: 1,
+      stock: sizeData?.stock ?? 0,
+    });
 
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
-  };
-
-  const handleBuyNow = () => {
-    alert("Buy Now!");
   };
 
   return (
@@ -65,19 +78,16 @@ export default function ProductDetailList() {
       </div>
 
       <div className="flex flex-col lg:flex-row mt-16 gap-10 items-start">
-        {/* Image Gallery */}
+        {/* Images */}
         <div className="w-full lg:w-1/2">
-          {/* parent harus relative */}
           <div className="relative overflow-hidden rounded-2xl w-full">
-            {/* Gambar utama */}
             <img
               src={images[currentIndex]}
               alt={product.name}
               className="w-full h-165 object-cover"
             />
 
-            {/* Thumbnail di dalam gambar */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3 backdrop-blur px-3 py-2 rounded-xl w-full">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center gap-3 px-3 py-2 w-full">
               {images.map((img, index) => (
                 <button
                   key={index}
@@ -99,6 +109,7 @@ export default function ProductDetailList() {
           </div>
         </div>
 
+        {/* Detail */}
         <div className="w-full lg:w-1/2">
           <h1 className="text-3xl lg:text-4xl font-medium tracking-tightest leading-10 lg:leading-12">
             {product.name}
@@ -110,6 +121,7 @@ export default function ProductDetailList() {
             Stock: {totalStock}
           </p>
 
+          {/* Size Selector */}
           <div className="flex flex-col gap-3 mt-8">
             <h1 className="text-base tracking-tightest leading-6">
               Select Size:{" "}
@@ -120,7 +132,7 @@ export default function ProductDetailList() {
               )}
             </h1>
             <div className="flex flex-wrap gap-4 mt-4">
-              {product.size.map((s) => (
+              {sizes.map((s) => (
                 <button
                   key={s.size}
                   onClick={() => setSelectedSize(s.size)}
@@ -139,6 +151,7 @@ export default function ProductDetailList() {
             </div>
           </div>
 
+          {/* Actions */}
           <div className="flex flex-col lg:flex-row gap-1.5 mt-8">
             <button
               onClick={handleAddToCart}
@@ -146,19 +159,17 @@ export default function ProductDetailList() {
                 added ? "bg-green-600" : "bg-maroon hover:bg-maroon/90"
               }`}
             >
-              {added ? "Added!" : "Add to Cart"}
+              {added ? "Added" : "Add to Cart"}
             </button>
-            <button
-              onClick={handleBuyNow}
-              className="bg-white border-2 border-maroon px-10 text-maroon tracking-tightest text-center text-lg font-medium py-3.5 rounded-full leading-6 hover:bg-maroon hover:text-white transition-colors"
-            >
+            <button className="bg-white border-2 border-maroon px-10 text-maroon tracking-tightest text-center text-lg font-medium py-3.5 rounded-full leading-6 hover:bg-maroon hover:text-white transition-colors">
               Buy Now
             </button>
           </div>
 
+          {/* Description */}
           <div className="flex flex-col gap-6 mt-12">
             <h1 className="text-lg tracking-tightest font-medium leading-6">
-              {product.title}
+              Description & Fit : {product.name}
             </h1>
             <p className="text-base text-abu tracking-tightest leading-6">
               {product.description}
