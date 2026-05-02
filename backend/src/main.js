@@ -7,6 +7,8 @@ import adminRoutes from './routes/adminRoutes.js'
 import authRoutes from './routes/authRoutes.js'
 import productRoutes from './routes/productRoutes.js'
 import cartRoutes from './routes/cartRoutes.js'
+import checkoutRoutes from './routes/checkoutRoutes.js'
+import webhookRoutes from './routes/webhookRoutes.js'
 
 const app = express();
 app.use(cookieParser())
@@ -24,6 +26,9 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
+
+app.use("/api/webhook", webhookRoutes);
+app.use("/api/checkout", checkoutRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/admin", adminRoutes);
 

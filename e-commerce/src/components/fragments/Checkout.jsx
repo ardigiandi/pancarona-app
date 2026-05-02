@@ -1,29 +1,25 @@
 import { useState, useEffect } from "react";
 import { formatPrice } from "@/utils/formatPrice";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "../../context/CartContext";
 import { useNavigate } from "react-router";
+import { useAuth } from "../../context/AuthContext";
 import InputField from "../molecule/InputField";
 import { Button } from "../ui/button";
+import api from "@/lib/api";
 
 export default function Checkout({ cart }) {
   const navigate = useNavigate();
-
   const { clearCart } = useCart();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  const [form, setForm] = useState(() => {
-    const saved = localStorage.getItem("checkoutForm");
-    return saved ? JSON.parse(saved) : { fullName: "", address: "", phone: "" };
-  });
-
-  useEffect(() => {
-    localStorage.setItem("checkoutForm", JSON.stringify(form));
-  }, [form]);
+  const [form, setForm] = useState({ fullName: "", address: "", phone: "" });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleCheckout = (e) => {
+  const handleCheckout = async (e) => {
     e.preventDefault();
 
     if (!form.fullName || !form.address || !form.phone) {
@@ -31,13 +27,33 @@ export default function Checkout({ cart }) {
       return;
     }
 
-    clearCart();
-    navigate("/");
+    if (!user) {
+      alert("Kamu harus login dulu!");
+      navigate("/auth/login");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log("cart items:", cart);
+      const { data } = await api.post("/checkout", {
+        ...form,
+        items: cart,
+      });
+
+      clearCart();
+      window.location.href = data.invoiceUrl;
+    } catch (err) {
+      alert(err.response?.data?.message || "Terjadi kesalahan, coba lagi.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="mt-12.5 flex flex-col gap-8">
       <div className="flex flex-col lg:flex-row justify-between gap-5">
+        {/* LEFT — Cart Items */}
         <div className="w-full lg:w-[65%]">
           <div className="flex flex-col gap-5 mt-8">
             {cart.map((item, index) => (
@@ -50,7 +66,6 @@ export default function Checkout({ cart }) {
                   alt={item.name}
                   className="w-37.5 rounded-lg"
                 />
-
                 <div className="flex flex-col w-full">
                   <div className="flex flex-col lg:flex-row gap-3 lg:gap-0 justify-between items-start">
                     <div className="flex flex-col gap-4 w-full lg:w-80">
@@ -69,6 +84,7 @@ export default function Checkout({ cart }) {
           </div>
         </div>
 
+        {/* RIGHT — Form */}
         <div className="mt-8 border-2 w-full h-fit p-8 rounded-2xl border-abuborder lg:w-[35%]">
           <h1 className="text-xl font-medium tracking-tightest leading-5">
             Order Summary
@@ -84,7 +100,6 @@ export default function Checkout({ cart }) {
               value={form.fullName}
               onChange={handleChange}
             />
-
             <InputField
               label="Address"
               name="address"
@@ -94,7 +109,6 @@ export default function Checkout({ cart }) {
               value={form.address}
               onChange={handleChange}
             />
-
             <InputField
               label="Phone"
               name="phone"
@@ -107,9 +121,10 @@ export default function Checkout({ cart }) {
 
             <Button
               onClick={handleCheckout}
-              className="bg-maroon text-center py-5 text-white font-medium rounded-full hover:bg-maroon/90 transition"
+              disabled={loading}
+              className="bg-maroon text-center py-5 text-white font-medium rounded-full hover:bg-maroon/90 transition disabled:opacity-50"
             >
-              Checkout Now
+              {loading ? "Memproses..." : "Checkout Now"}
             </Button>
           </div>
         </div>

@@ -10,8 +10,12 @@ import {
   deleteProduct,
   updateProduct,
 } from "../controllers/admin/productAdminController.js";
+import {
+  getActivities,
+  getDashboard,
+  getWeeklyRevenue,
+} from "../controllers/admin/dashboardAdminController.js";
 import { upload } from "../lib/cloudinary.js";
-import { getDashboard } from "../controllers/admin/dashboardAdminController.js";
 
 const router = Router();
 
@@ -23,11 +27,9 @@ router.use(authenticateAdmin);
 router.get("/me", getMe);
 
 router.get("/dashboard", getDashboard);
-router.post(
-  "/products",
-  upload.array("images", 5),
-  createProduct
-);
+router.post("/products", upload.array("images", 5), createProduct);
+router.get("/weekly-revenue", getWeeklyRevenue);
+router.get("/activities", getActivities);
 router.put("/products/:id", upload.array("images", 5), updateProduct);
 router.delete("/products/:id", deleteProduct);
 

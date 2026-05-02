@@ -78,6 +78,7 @@ model Order {
   totalPrice Int
   status     String      @default("pending")
   invoiceUrl String?
+  externalId  String?  @unique
   items      OrderItem[]
   createdAt  DateTime    @default(now())
 }

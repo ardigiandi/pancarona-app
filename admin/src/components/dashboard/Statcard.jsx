@@ -16,7 +16,7 @@ export default function StatCard({ title, value, change, positive, icon: Icon, c
 
   return (
     <div
-      className={`relative p-5 rounded-2xl border bg-gradient-to-br ${colors[color]} overflow-hidden`}
+      className={`relative p-5 rounded-2xl border bg-linear-to-br ${colors[color]} overflow-hidden`}
     >
       <div className="flex items-start justify-between">
         <div>

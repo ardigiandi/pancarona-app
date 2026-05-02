@@ -1,25 +1,51 @@
-const weekData = [
-  { day: "Sen", value: 65 },
-  { day: "Sel", value: 80 },
-  { day: "Rab", value: 55 },
-  { day: "Kam", value: 90 },
-  { day: "Jum", value: 75 },
-  { day: "Sab", value: 45 },
-  { day: "Min", value: 60 },
-];
+import { useEffect, useState } from "react";
+import { api } from "../../api/api.js";
 
 export default function MiniChart() {
-  const max = Math.max(...weekData.map((d) => d.value));
+  const [weekData, setWeekData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchChart = async () => {
+      try {
+        const res = await api.get("/weekly-revenue");
+        setWeekData(res.data);
+      } catch (err) {
+        console.error("Chart error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChart();
+  }, []);
+
+  if (loading) return <p className="text-white">Loading chart...</p>;
+
+  const max = Math.max(...weekData.map((d) => d.value), 1);
+
+  // total revenue minggu ini
+  const total = weekData.reduce((acc, curr) => acc + curr.value, 0);
+
+  const formatRupiah = (num) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+    }).format(num);
 
   return (
     <div className="bg-[#141418] border border-white/5 rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold text-white">Pendapatan Minggu Ini</h2>
         <span className="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-          +12.4%
+          realtime
         </span>
       </div>
-      <p className="text-2xl font-bold text-white mb-5">Rp 48.200.000</p>
+
+      <p className="text-2xl font-bold text-white mb-5">
+        {formatRupiah(total)}
+      </p>
+
       <div className="flex items-end gap-2 h-24">
         {weekData.map((d, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-1">
