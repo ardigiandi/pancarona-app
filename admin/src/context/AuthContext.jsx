@@ -1,5 +1,3 @@
-// src/context/AuthContext.jsx
-
 import { createContext, useContext, useEffect, useState } from "react";
 import * as authService from "../services/authService";
 
@@ -22,7 +20,7 @@ export const AuthProvider = ({ children }) => {
 
   const handleLogin = async (form) => {
     const res = await authService.login(form);
-    setAdmin(res.admin); // langsung set tanpa reload
+    setAdmin(res.admin); 
   };
 
   const handleLogout = async () => {

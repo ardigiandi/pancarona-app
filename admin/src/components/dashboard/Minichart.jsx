@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../../api/api.js";
+import { formatPrice } from "../../lib/formatPrice.js";
 
 export default function MiniChart() {
   const [weekData, setWeekData] = useState([]);
@@ -24,14 +25,8 @@ export default function MiniChart() {
 
   const max = Math.max(...weekData.map((d) => d.value), 1);
 
-  // total revenue minggu ini
   const total = weekData.reduce((acc, curr) => acc + curr.value, 0);
 
-  const formatRupiah = (num) =>
-    new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-    }).format(num);
 
   return (
     <div className="bg-[#141418] border border-white/5 rounded-2xl p-5">
@@ -43,7 +38,7 @@ export default function MiniChart() {
       </div>
 
       <p className="text-2xl font-bold text-white mb-5">
-        {formatRupiah(total)}
+        {formatPrice(total)}
       </p>
 
       <div className="flex items-end gap-2 h-24">

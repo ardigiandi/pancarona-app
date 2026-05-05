@@ -14,7 +14,7 @@ export const getDashboard = async (req, res) => {
         }),
         prisma.order.aggregate({
           _sum: { totalPrice: true },
-          where: { status: "paid" },
+          where: { status: { in: ["paid", "shipped", "done"] } },
         }),
       ]);
 
@@ -44,7 +44,7 @@ export const getWeeklyRevenue = async (req, res) => {
 
     const orders = await prisma.order.findMany({
       where: {
-        status: "paid",
+        status: { in: ["paid", "shipped", "done"] },
         createdAt: {
           gte: startOfWeek,
           lte: endOfWeek,

@@ -40,6 +40,30 @@ export const createCheckout = async (req, res) => {
       },
     });
 
+    for (const item of items) {
+      const sizeData = await prisma.productSize.findFirst({
+        where: {
+          productId: item.productId,
+          size: item.size,
+        },
+      });
+
+      if (!sizeData) continue;
+
+      const newStock = sizeData.stock - item.qty;
+
+      if (newStock < 0) {
+        return res.status(400).json({
+          message: `Stock ${item.name} size ${item.size} tidak cukup`,
+        });
+      }
+
+      await prisma.productSize.update({
+        where: { id: sizeData.id },
+        data: { stock: newStock },
+      });
+    }
+
     const externalId = `order-${order.id}`;
 
     const invoice = await xendit.Invoice.createInvoice({
@@ -48,7 +72,7 @@ export const createCheckout = async (req, res) => {
         amount: totalPrice,
         description: `Pembayaran Order #${order.id} - Pancarona`,
         payerEmail: req.user.email,
-        successRedirectURL: "http://localhost:5173/payment-success"
+        successRedirectURL: "http://localhost:5173/payment-success",
       },
     });
 
@@ -56,7 +80,7 @@ export const createCheckout = async (req, res) => {
       where: { id: order.id },
       data: {
         invoiceUrl: invoice.invoiceUrl,
-        externalId: invoice.id, 
+        externalId: invoice.id,
       },
     });
 

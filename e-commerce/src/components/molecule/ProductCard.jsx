@@ -2,8 +2,8 @@ import { formatPrice } from "@/utils/formatPrice";
 
 export default function ProductCard({ image, name, price }) {
   return (
-    <div className="snap-center shrink-0 w-56 lg:w-66.25 h-99  flex flex-col justify-between">
-      <div className="lg:w-66.25 lg:h-66.25 w-56 overflow-hidden">
+    <div className="snap-center shrink-0 w-56 lg:w-70 h-99  flex flex-col justify-between">
+      <div className="lg:w-66.25 lg:h-70 w-56 overflow-hidden">
         <img src={image} alt="product" className="w-full h-full object-cover" />
       </div>
 

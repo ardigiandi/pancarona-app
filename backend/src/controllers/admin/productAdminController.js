@@ -2,50 +2,41 @@ import prisma from "../../lib/prisma.js";
 import { slugify } from "../../lib/slugify.js";
 import cloudinary from "../../lib/cloudinary.js";
 
-export const getProduct = async (res, req) => {
+export const getProduct = async (req, res) => {
   try {
     const products = await prisma.product.findMany({
       include: { sizes: true },
       orderBy: { createdAt: "desc" },
     });
 
-    res.status(products);
+    res.json(products);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
 export const createProduct = async (req, res) => {
+  const { name, price, description, sizes } = req.body;
   try {
-    const { name, price, description } = req.body;
-
-    if (!name || !price) {
-      return res.status(400).json({ message: "Data tidak lengkap" });
-    }
-
-    if (!req.files || req.files.length === 0) {
+    if (!req.files || req.files.length === 0)
       return res.status(400).json({ message: "Minimal upload 1 foto" });
-    }
 
     const images = req.files.map((file) => file.path);
 
-    let slug = slugify(name, { lower: true });
+    let slug = slugify(name);
     const exists = await prisma.product.findUnique({ where: { slug } });
     if (exists) slug = `${slug}-${Date.now()}`;
 
-    const rawSizes = req.body.sizes || {};
-    const parsedSizes = Array.isArray(rawSizes)
-      ? rawSizes
-      : Object.values(rawSizes);
+    // ← parse sizes dengan aman
+    let parsedSizes = [];
+    try {
+      parsedSizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes;
+    } catch {
+      return res.status(400).json({ message: "Format sizes tidak valid" });
+    }
 
-    const finalSizes = parsedSizes.map((item) => ({
-      size: item.size,
-      stock: parseInt(item.stock) || 0,
-    }));
-
-    console.log("BODY:", req.body);
-    console.log("FILES:", req.files);
-    console.log("SIZES:", finalSizes);
+    if (!parsedSizes || parsedSizes.length === 0)
+      return res.status(400).json({ message: "Pilih minimal 1 ukuran" });
 
     const product = await prisma.product.create({
       data: {
@@ -55,7 +46,10 @@ export const createProduct = async (req, res) => {
         description,
         images,
         sizes: {
-          create: finalSizes,
+          create: parsedSizes.map((s) => ({
+            size: s.size,
+            stock: parseInt(s.stock),
+          })),
         },
       },
       include: { sizes: true },
@@ -63,14 +57,13 @@ export const createProduct = async (req, res) => {
 
     res.status(201).json(product);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: err.message });
   }
 };
 
 export const updateProduct = async (req, res) => {
   const id = parseInt(req.params.id);
-  const { name, price, title, description, sizes } = req.body;
+  const { name, price, description, sizes } = req.body;
   try {
     const existingProduct = await prisma.product.findUnique({ where: { id } });
     const images =
@@ -94,7 +87,6 @@ export const updateProduct = async (req, res) => {
         name,
         slug,
         price: parseInt(price),
-        title,
         description,
         images,
         sizes: { create: parsedSizes },
