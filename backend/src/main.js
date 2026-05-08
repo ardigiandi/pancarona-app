@@ -1,34 +1,35 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
-import cookieParser from 'cookie-parser'
+import cookieParser from "cookie-parser";
 
-import adminRoutes from './routes/adminRoutes.js'
-import authRoutes from './routes/authRoutes.js'
-import productRoutes from './routes/productRoutes.js'
-import cartRoutes from './routes/cartRoutes.js'
-import checkoutRoutes from './routes/checkoutRoutes.js'
-import webhookRoutes from './routes/webhookRoutes.js'
+import adminRoutes from "./routes/adminRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
+import checkoutRoutes from "./routes/checkoutRoutes.js";
+import webhookRoutes from "./routes/webhookRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 
 const app = express();
-app.use(cookieParser())
+app.use(cookieParser());
 
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:5174"
-  ],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.urlencoded({ extended: true }));
 
-app.use('/api/auth', authRoutes)
-app.use('/api/products', productRoutes)
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
 
 app.use("/api/webhook", webhookRoutes);
 app.use("/api/checkout", checkoutRoutes);
+app.use("/api/orders", orderRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/admin", adminRoutes);
 
