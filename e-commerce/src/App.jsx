@@ -10,6 +10,7 @@ import SignUp from "./pages/auth/signup";
 import ProtectedRoute from "./components/fragments/ProtectedRoute";
 import CartPage from "./pages/cartpage";
 import CheckoutPage from "./pages/checkoutpage";
+import OrderPage from "./pages/orderpage";
 
 function App() {
   const location = useLocation();
@@ -54,6 +55,15 @@ function App() {
           element={
             <ProtectedRoute>
               <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/order-list"
+          element={
+            <ProtectedRoute>
+              <OrderPage />
             </ProtectedRoute>
           }
         />

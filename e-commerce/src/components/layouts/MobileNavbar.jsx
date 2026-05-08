@@ -10,13 +10,17 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Link } from "react-router";
 
 import { Button } from "../ui/button";
 
 import { MenuIcon } from "lucide-react";
 import CartIcon from "../atom/CartIcon";
+import { useAuth } from "@/context/AuthContext";
+import ProfileMenu from "../fragments/ProfileMenu";
 
 export default function MobileNavbar() {
+  const { user } = useAuth();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const navItems = [
@@ -67,6 +71,19 @@ export default function MobileNavbar() {
               </Button>
             ))}
           </nav>
+
+          <div className="p-3 h-lvh flex items-end">
+            {user ? (
+              <ProfileMenu />
+            ) : (
+              <Link
+                to="/auth/signin"
+                className="bg-maroon text-sm w-full text-center tracking-tightest px-4 py-2 rounded-full font-medium text-white"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
         </SheetContent>
       </Sheet>
     </div>

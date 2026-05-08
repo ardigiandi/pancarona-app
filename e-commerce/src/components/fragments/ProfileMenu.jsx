@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router";
+import { Link } from "react-router";
 
 export default function ProfileMenu() {
   const { user, logout } = useAuth();
@@ -45,6 +46,11 @@ export default function ProfileMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
+        <DropdownMenuItem className="text-abu cursor-pointer">
+          <Link to="order-list">Pembelian</Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleLogout}
           className="text-maroon focus:text-maroon focus:bg-red-50 cursor-pointer"
