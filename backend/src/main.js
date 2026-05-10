@@ -10,6 +10,7 @@ import cartRoutes from "./routes/cartRoutes.js";
 import checkoutRoutes from "./routes/checkoutRoutes.js";
 import webhookRoutes from "./routes/webhookRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import courierRoutes from './routes/courierRoutes.js'
 
 const app = express();
 app.use(cookieParser());
@@ -32,6 +33,8 @@ app.use("/api/checkout", checkoutRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/courier", courierRoutes)
+
 
 app.get("/", (req, res) => res.json({ message: "Pancarona API is running" }));
 

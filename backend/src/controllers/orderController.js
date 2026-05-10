@@ -1,4 +1,5 @@
 import prisma from "../lib/prisma.js";
+import { pusher } from "../lib/pusher.js";
 
 export const getOrderStatus = async (req, res) => {
   try {
@@ -38,6 +39,35 @@ export const getOrderStatusById = async (req, res) => {
     }
 
     res.json(order);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const createOrder = async (req, res) => {
+  const { fullName, address, totalPrice, phone, userId } = req.body;
+
+  try {
+    const newOrder = await prisma.order.create({
+      data: {
+        fullName,
+        address,
+        totalPrice,
+        phone,
+        user: {
+          connect: { id: Number(userId) },
+        },
+      },
+    });
+
+    await pusher.trigger("penerimaan-order", "order-baru", {
+      orderId: newOrder.id,
+      customerName: req.body.customerName,
+      address: req.body.address,
+      total: req.body.total,
+    });
+
+    res.status(200).json(newOrder);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

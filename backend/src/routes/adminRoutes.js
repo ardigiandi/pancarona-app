@@ -29,11 +29,14 @@ import {
   updateAdminProfile,
 } from "../controllers/admin/authAdminController.js";
 import { upload } from "../lib/cloudinary.js";
+import { registerCourier } from "../controllers/couriers/authCourierController.js";
 
 const router = Router();
 
 router.post("/login", adminLogin);
 router.post("/logout", adminLogout);
+
+router.post("/register-courier", registerCourier);
 
 router.use(authenticateAdmin);
 
@@ -47,7 +50,8 @@ router.put("/products/:id", upload.array("images", 5), updateProduct);
 router.delete("/products/:id", deleteProduct);
 router.get("/users", getUsers);
 router.delete("/users/:id", deleteUser);
-router.get("/products", getProduct);
+router.get("/products", getProduct)
+
 
 router.get("/orders", getOrders);
 router.put("/orders/:id", updateOrderStatus);
