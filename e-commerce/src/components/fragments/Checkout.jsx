@@ -21,12 +21,10 @@ export default function Checkout({ cart }) {
 
   const handleCheckout = async (e) => {
     e.preventDefault();
-
     if (!form.fullName || !form.address || !form.phone) {
       alert("Lengkapi semua data dulu ya!");
       return;
     }
-
     if (!user) {
       alert("Kamu harus login dulu!");
       navigate("/auth/login");
@@ -36,13 +34,30 @@ export default function Checkout({ cart }) {
     setLoading(true);
     try {
       console.log("cart items:", cart);
-      const { data } = await api.post("/checkout", {
+
+      const formattedItems = cart.map((item) => ({
+        productId: item.productId,
+        name: item.name,
+        image: item.image,
+        price: item.price,
+        size: item.size,
+        qty: item.qty,
+      }));
+
+      // 1. Kirim data transaksi ke backend
+      const { data } = await api.post("/orders", {
         ...form,
-        items: cart,
+        items: formattedItems,
       });
 
+      // 2. Kosongkan keranjang belanja
       clearCart();
-      window.location.href = data.invoiceUrl;
+
+      // 3. PERBAIKAN: Buka invoice pembayaran Xendit di TAB BARU browser
+      window.open(data.invoiceUrl, "_blank");
+
+      // 4. Alihkan halaman utama saat ini langsung ke halaman pelacakan pesanan aktif
+      navigate("/order-tracking");
     } catch (err) {
       alert(err.response?.data?.message || "Terjadi kesalahan, coba lagi.");
     } finally {

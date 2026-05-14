@@ -47,7 +47,7 @@ export default function ProfileMenu() {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem className="text-abu cursor-pointer">
-          <Link to="order-list">Pembelian</Link>
+          <Link to="order-tracking">Pembelian</Link>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />

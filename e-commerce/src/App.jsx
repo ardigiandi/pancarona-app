@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/fragments/ProtectedRoute";
 import CartPage from "./pages/cartpage";
 import CheckoutPage from "./pages/checkoutpage";
 import OrderPage from "./pages/orderpage";
+import OrderTracking from "./pages/ordertracking";
 
 function App() {
   const location = useLocation();
@@ -64,6 +65,15 @@ function App() {
           element={
             <ProtectedRoute>
               <OrderPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/order-tracking"
+          element={
+            <ProtectedRoute>
+              <OrderTracking />
             </ProtectedRoute>
           }
         />
